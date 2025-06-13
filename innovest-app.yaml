@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/InnoVest-Organization/Deployment'
     targetRevision: main
-    path: deployment/generated
+    path: generated
   destination:
     server: 'https://kubernetes.default.svc'                  # Target cluster (in-cluster)
     namespace: innovest-dev                                   # Target namespace where to deploy
