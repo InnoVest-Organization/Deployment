@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: innovest-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/InnoVest-Organization/Deployment'
+    targetRevision: main
+    path: deployment/generated
+  destination:
+    server: 'https://kubernetes.default.svc'                  # Target cluster (in-cluster)
+    namespace: innovest-dev                                   # Target namespace where to deploy
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
