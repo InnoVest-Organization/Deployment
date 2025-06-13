@@ -17,10 +17,10 @@ for i in range(0, len(lines), 5):
 
     os.makedirs(f"generated/{svc_name}", exist_ok=True)
 
-    with open(f"generated/{svc_name}-deployment.yaml", "w") as out:
+    with open(f"generated/{svc_name}/deployment.yaml", "w") as out:
         out.write(TEMPLATE_DEPLOY.substitute(env))
 
-    with open(f"generated/{svc_name}-service.yaml", "w") as out:
+    with open(f"generated/{svc_name}/service.yaml", "w") as out:
         out.write(TEMPLATE_SERVICE.substitute(env))
 
 print("Microservice manifests generated in /generated")

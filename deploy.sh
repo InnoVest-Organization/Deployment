@@ -27,6 +27,7 @@ fi
 if [[ "$1" == "--clean" ]]; then
   echo -e "${RED}[!] Cleaning existing resources in namespace: $NAMESPACE${NC}"
   kubectl delete all --all -n "$NAMESPACE" || true
+  kubectl delete deployments -n "$NAMESPACE" || true
   kubectl delete ingress innovest-ingress -n "$NAMESPACE" || true
   rm -rf generated/
   echo -e "${GREEN}[✔] Clean complete.${NC}"
@@ -62,11 +63,11 @@ echo -e "${GREEN}[✔] Deployment complete!${NC}"
 echo -e "${GREEN}Access your services via Ingress: http://localhost/{API_PATH}/...${NC}"
 
 # Optional port-forward
-read -p $'\n🔁 Do you want to port-forward ingress to localhost:80? (y/n) ' answer
+read -p $'\n Do you want to port-forward ingress to localhost:80? (y/n) ' answer
 if [[ "$answer" == "y" ]]; then
   echo -e "${GREEN}Forwarding port 80 to ingress-nginx-controller service...${NC}"
   kubectl port-forward service/ingress-nginx-controller 80:80 -n ingress-nginx
 else
-  echo -e "${YELLOW}ℹ️ Skipping port-forward. You can run it manually if needed:${NC}"
+  echo -e "${YELLOW} Skipping port-forward. You can run it manually if needed:${NC}"
   echo "kubectl port-forward service/ingress-nginx-controller 80:80 -n ingress-nginx"
 fi
