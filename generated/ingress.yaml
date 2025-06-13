@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: innovest-ingress
+  namespace: innovest-dev
+  annotations:
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:5173"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS, PUT, DELETE"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization,Content-Type"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost
+    http:
+      paths:
+        - path: /api/story(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: successstory-microservice
+              port:
+                number: 80
+        - path: /api/payments(/|$)(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: payment-microservice
+              port:
+                number: 80

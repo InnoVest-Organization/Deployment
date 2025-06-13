@@ -1,0 +1,11 @@
+resources:
+  - deployment.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: microservice-config
+    envs:
+      - ../../services.env
+
+generatorOptions:
+  disableNameSuffixHash: true
