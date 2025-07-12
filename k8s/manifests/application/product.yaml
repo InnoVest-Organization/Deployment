@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: productservice
+  name: productservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productservice
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: productservice
+    spec:
+      containers:
+        - image: isarali/new-product_service:latest
+          name: new-product-service-gqv9m
+          ports:
+            - containerPort: 5002
+          envFrom:
+            - configMapRef:
+                name: product-service-config
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: product-service-secrets
+                  key: database-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: product-service-secrets
+                  key: database-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: product-service-secrets
+                  key: database-password
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: "com.mysql.cj.jdbc.Driver"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "none"
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: "org.hibernate.dialect.MySQLDialect"
+            - name: SPRING_JPA_SHOW_SQL
+              value: "true"
+            - name: SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL
+              value: "true"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: productservice
+  name: productservice
+spec:
+  ports:
+    - name: 5002-5002
+      port: 5002
+      protocol: TCP
+      targetPort: 5002
+  selector:
+    app: productservice
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-service-config
+  labels:
+    app: product-service
+data:
+  # External Service URLs
+  investor.service.url: "http://investor-service:5006/api/investors/"
+  notification.service.url: "http://notification-service:5005/api/notifications"
+  innovator.service.url: "http://innovator-service:5001/api/innovator/"
+
+  # Server Configuration
+  server.port: "5002"
+  management.server.port: "5002"
+
+  # Application Name
+  spring.application.name: "product-service"
+
+  # Kafka Configuration
+  spring.kafka.bootstrap-servers: "kafka:9092"
+  spring.kafka.template.default-topic: "new-bid"
+  spring.kafka.producer.key-serializer: "org.apache.kafka.common.serialization.StringSerializer"
+  spring.kafka.producer.value-serializer: "org.springframework.kafka.support.serializer.JsonSerializer"
+
+  # Resilience4j Circuit Breaker Configuration
+  resilience4j.circuitbreaker.instances.invention.registerHealthIndicator: "true"
+  resilience4j.circuitbreaker.instances.invention.event-consumer-buffer-size: "10"
+  resilience4j.circuitbreaker.instances.invention.slidingWindowType: "COUNT_BASED"
+  resilience4j.circuitbreaker.instances.invention.slidingWindowSize: "5"
+  resilience4j.circuitbreaker.instances.invention.failureRateThreshold: "50"
+  resilience4j.circuitbreaker.instances.invention.waitDurationInOpenState: "5s"
+  resilience4j.circuitbreaker.instances.invention.permittedNumber0fCallsInHalfOpenState: "3"
+  resilience4j.circuitbreaker.instances.invention.automaticTransitionFromOpenToHalfOpenEnabled: "true"
+  resilience4j.circuitbreaker.instances.invention.minimum-number-of-calls: "5"
+
+  # Resilience4j Timeout Configuration
+  resilience4j.timelimiter.instances.invention.timeout-duration: "3s"
+
+  # Resilience4j Retry Configuration
+  resilience4j.retry.instances.invention.max-attempts: "3"
+  resilience4j.retry.instances.invention.wait-duration: "5s"
+
+  # Actuator Configuration
+  management.endpoint.circuitbreakers.enabled: "true"
+  management.endpoints.web.exposure.include: "health,info,metrics,prometheus,circuitbreakers"
+
+  management.endpoint.health.show-details: "always"
+
+  management.metrics.distribution.percentiles-histogram.http.server.requests: "true"
+  management.observations.key-values.application: "product-service"
+  management.tracing.sampling.probability: "1.0"
+
+  # Logging Configuration
+  loki.url: "http://loki:3100/loki/api/v1/push"
+
+  # Swagger Configuration
+  springdoc.swagger-ui.path: "/swagger-ui.html"
+
+---
+apiVersion: v1
+data:
+  database-url: amRiYzpteXNxbDovL215c3FsLTI1OTM4YWFhLWxpeWFuYWdlaXNhcmEtMjdmOS5oLmFpdmVuY2xvdWQuY29tOjE3Mzc2L2RlZmF1bHRkYj9zc2wtbW9kZT1SRVFVSVJFRA==
+  database-username: YXZuYWRtaW4=
+  database-password: QVZOU19laThxRGFEQ28xWEctNXc1VDZV
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: product-service-secrets
